@@ -1,0 +1,21 @@
+[project]
+name = "elevenlabs-x-mcp"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastmcp>=2.10.6",
+    "google-api-python-client>=2.170.0",
+    "google-auth-httplib2>=0.2.0",
+    "google-auth-oauthlib>=1.2.2",
+    "mcp>=1.9.1",
+    "pydantic>=2.11.7",
+    "pytz>=2025.2",
+]
+
+[dependency-groups]
+dev = [
+    "iprogress>=0.4",
+    "ipykernel>=6.30.0",
+]
