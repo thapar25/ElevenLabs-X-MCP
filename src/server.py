@@ -7,18 +7,19 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from fastmcp import FastMCP
 from utils import to_rfc3339, format_dt
-from auth import AuthMiddleware
+from auth import auth_provider
 import os
 from dotenv import load_dotenv
 from starlette.responses import JSONResponse
 
+
 _ = load_dotenv()
 
 
-mcp = FastMCP(name="Google Calendar")
+mcp = FastMCP(name="Google Calendar", auth=auth_provider ,log_level="DEBUG", debug=True)
 
 
-mcp.add_middleware(AuthMiddleware())
+# mcp.add_middleware(AuthMiddleware())
 
 
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
@@ -143,7 +144,7 @@ def get_busy_slots(start_time: str, end_time: str) -> str:
 
 
 @mcp.custom_route("/health", methods=["GET"])
-async def health_check():
+async def health_check(request):
     """Health check endpoint to verify server status.
     Returns:
         JSONResponse: A JSON response indicating the server status.
