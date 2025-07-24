@@ -1,29 +1,28 @@
 import datetime
 import pytz
 
+IST = pytz.timezone("Asia/Kolkata")
+
 
 def to_ist_iso8601(dt: datetime.datetime) -> str:
     """
     Convert a datetime object to ISO 8601 string in IST timezone.
     """
-    ist = pytz.timezone("Asia/Kolkata")
     if dt.tzinfo is None:
-        dt = pytz.utc.localize(dt)
-    dt_ist = dt.astimezone(ist)
-    return dt_ist.isoformat()
+        dt = IST.localize(dt)
+    else:
+        dt = dt.astimezone(IST)
+    return dt.isoformat()
+
 
 def parse_iso8601_to_ist(dt_str: str) -> datetime.datetime:
     """
-    Parse an ISO 8601 datetime string and convert to IST timezone.
+    Parse an ISO 8601 datetime string and ensure it's in IST timezone.
+    Assumes input is always IST, but naive (no tzinfo).
     """
-    dt = datetime.datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
-    ist = pytz.timezone("Asia/Kolkata")
+    dt = datetime.datetime.fromisoformat(dt_str)
     if dt.tzinfo is None:
-        dt = pytz.utc.localize(dt)
-    return dt.astimezone(ist)
-
-def get_ist_now() -> str:
-    """
-    Get the current date and time in IST timezone.
-    """
-    return to_ist_iso8601(datetime.datetime.now(pytz.timezone("Asia/Kolkata")))
+        dt = IST.localize(dt)
+    else:
+        dt = dt.astimezone(IST)
+    return dt

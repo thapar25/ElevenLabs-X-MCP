@@ -1,8 +1,9 @@
-import datetime, pytz
+import datetime
+import pytz
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from fastmcp import FastMCP
-from time_utils import to_ist_iso8601, parse_iso8601_to_ist, get_ist_now
+from time_utils import to_ist_iso8601, parse_iso8601_to_ist
 from auth import auth_provider, get_credentials
 from dotenv import load_dotenv
 from starlette.responses import JSONResponse
@@ -13,16 +14,9 @@ _ = load_dotenv()
 
 mcp = FastMCP(name="Google Calendar", auth=auth_provider, log_level="DEBUG", debug=True)
 
-@mcp.tool()
-def get_datetime_now() -> str:
-    """
-    Get the current date and time in ISO 8601 format (IST).
-    """
-    now_ist = get_ist_now()
-    return now_ist
 
 @mcp.tool()
-def get_events_today() -> str:
+async def get_events_today() -> str:
     """
     Get today's events from the user's Google Calendar.
     All times are returned in ISO 8601 format (IST).
@@ -75,13 +69,14 @@ def get_events_today() -> str:
     except HttpError as error:
         return f"An error occurred: {error}"
 
+
 @mcp.tool()
-def get_busy_slots(start: str, end: str) -> str:
+async def get_busy_slots(start: str, end: str) -> str:
     """
     Get busy slots in the user's Google Calendar between start and end.
     Args:
-        start (str): Start time in ISO 8601 (YYYY-MM-DD HH:MM) format
-        end (str): End time in ISO 8601 (YYYY-MM-DD HH:MM) format
+        start (str): Start time in ISO 8601 (IST, no tzinfo)
+        end (str): End time in ISO 8601 (IST, no tzinfo)
     Returns:
         All busy slots in ISO 8601 format (IST).
     """
@@ -95,7 +90,7 @@ def get_busy_slots(start: str, end: str) -> str:
                 body={
                     "timeMin": to_ist_iso8601(parse_iso8601_to_ist(start)),
                     "timeMax": to_ist_iso8601(parse_iso8601_to_ist(end)),
-                    "timeZone": "IST",
+                    "timeZone": "Asia/Kolkata",
                     "items": [{"id": "primary"}],
                 }
             )
@@ -112,13 +107,14 @@ def get_busy_slots(start: str, end: str) -> str:
     except HttpError as error:
         return f"An error occurred: {error}"
 
+
 @mcp.tool()
 async def list_events(start: str, end: str) -> str:
     """
     List events in the user's Google Calendar between start and end.
     Args:
-        start (str): Start time in ISO 8601 (YYYY-MM-DD HH:MM) format
-        end (str): End time in ISO 8601 (YYYY-MM-DD HH:MM) format
+        start (str): Start time in ISO 8601 (IST, no tzinfo)
+        end (str): End time in ISO 8601 (IST, no tzinfo)
     Returns:
         All events in ISO 8601 format (IST).
     """
@@ -147,6 +143,7 @@ async def list_events(start: str, end: str) -> str:
 
     except HttpError as error:
         return f"An error occurred: {error}"
+
 
 @mcp.custom_route("/health", methods=["GET"])
 async def health_check(request):
