@@ -1,3 +1,4 @@
+import argparse
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from fastmcp import FastMCP
@@ -89,9 +90,12 @@ async def list_events(start: str, end: str) -> str:
 
 
 @mcp.tool()
-async def create_event(detailed_info: str) -> str:
+async def create_event(event_description:str, duration:str, temporal_information: str) -> str:
     """
     Create an event in the user's Google Calendar based on information about the event (duration, day of the week, time of the day etc.).
+    Eg:
+        create_event("Doctor's appointment", "1 hour", "Monday at 10 AM")
+        create_event("Family dinner in Mumbai", "3 hours", "Last Satturday of the month at 8 PM")
     """
     creds = get_credentials()
 
@@ -101,7 +105,7 @@ async def create_event(detailed_info: str) -> str:
             service.events()
             .quickAdd(
                 calendarId="primary",
-                text=detailed_info,
+                text= f"{event_description} for {duration} on {temporal_information}",
             )
             .execute()
         )
@@ -122,7 +126,21 @@ async def health_check(request):
 
 def main():
     """Main function to run the FastMCP server."""
-    mcp.run(transport="streamable-http", host="127.0.0.1", port=8000)
+
+    parser = argparse.ArgumentParser(description="Run the FastMCP server with a specified transport.")
+    parser.add_argument(
+        "--transport", 
+        type=str, 
+        default="streamable-http",
+        help="Specify the transport method (e.g., 'streamable-http', 'stdio', 'sse'). Default is 'streamable-http'."
+    )
+    
+    args = parser.parse_args()
+
+    if args.transport == "stdio":
+        mcp.run(transport=args.transport)
+    else:
+        mcp.run(transport=args.transport, host="127.0.0.1", port=8000)
 
 
 if __name__ == "__main__":

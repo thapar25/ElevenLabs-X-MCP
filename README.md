@@ -6,7 +6,7 @@
 
 ### Google Calendar API
  - https://developers.google.com/workspace/calendar/api/v3/reference/freebusy
- - https://developers.google.com/workspace/calendar/api/v3/reference/events/quickAdd (Good find, uses LLM's maybe)
+ - https://developers.google.com/workspace/calendar/api/v3/reference/events/quickAdd (uses LLM's maybe, no cost)
 
 
 ### Attempted Solutions:
