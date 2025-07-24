@@ -1,14 +1,9 @@
-import datetime
-import os.path
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
+import datetime, pytz
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from fastmcp import FastMCP
-from utils import to_rfc3339, format_dt
-from auth import auth_provider
-import os
+from time_utils import to_ist_iso8601, parse_iso8601_to_ist, get_ist_now
+from auth import auth_provider, get_credentials
 from dotenv import load_dotenv
 from starlette.responses import JSONResponse
 
@@ -16,51 +11,37 @@ from starlette.responses import JSONResponse
 _ = load_dotenv()
 
 
-mcp = FastMCP(name="Google Calendar", auth=auth_provider ,log_level="DEBUG", debug=True)
+mcp = FastMCP(name="Google Calendar", auth=auth_provider, log_level="DEBUG", debug=True)
 
-
-SCOPES = ["https://www.googleapis.com/auth/calendar"]
-
+@mcp.tool()
+def get_datetime_now() -> str:
+    """
+    Get the current date and time in ISO 8601 format (IST).
+    """
+    now_ist = get_ist_now()
+    return now_ist
 
 @mcp.tool()
 def get_events_today() -> str:
     """
     Get today's events from the user's Google Calendar.
-
-    Returns:
-        str: A formatted string of today's events.
+    All times are returned in ISO 8601 format (IST).
     """
-    creds = None
-    if os.path.exists("token.json"):
-        creds = Credentials.from_authorized_user_file("token.json", SCOPES)
-    # If there are no (valid) credentials available, let the user log in.
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
-            creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
-        with open("token.json", "w") as token:
-            token.write(creds.to_json())
+    creds = get_credentials()
 
     try:
         service = build("calendar", "v3", credentials=creds)
-
-        now_utc = datetime.datetime.now(tz=datetime.timezone.utc)
-        ist_offset = datetime.timedelta(hours=5, minutes=30)
-        ist = datetime.timezone(ist_offset)
-        now_ist = now_utc.astimezone(ist)
+        now_ist = datetime.datetime.now(pytz.timezone("Asia/Kolkata"))
         today_ist = now_ist.date()
         end_of_day_ist = datetime.datetime.combine(
             today_ist,
-            datetime.time(
-                hour=23, minute=59, second=59, microsecond=999999, tzinfo=ist
-            ),
+            datetime.time(23, 59, 59, 999999),
         )
-        now_iso = now_ist.isoformat()
-        end_of_day_iso = end_of_day_ist.isoformat()
-        print("Getting the upcoming events for today...")
+        end_of_day_ist = parse_iso8601_to_ist(end_of_day_ist.isoformat())
+
+        now_iso = to_ist_iso8601(now_ist)
+        end_of_day_iso = to_ist_iso8601(end_of_day_ist)
+
         events_result = (
             service.events()
             .list(
@@ -83,36 +64,28 @@ def get_events_today() -> str:
             start_time = event["start"].get("dateTime", event["start"].get("date"))
             end_time = event["end"].get("dateTime", event["end"].get("date"))
             title = event.get("summary", "Untitled Event")
-            location = event.get("location", "No Location specified")
             description = event.get("description", "No Description provided")
-            hangout_link = event.get("hangoutLink", "No meeting link provided")
-            start = format_dt(start_time)
-            end = format_dt(end_time)
+            start = to_ist_iso8601(parse_iso8601_to_ist(start_time))
+            end = to_ist_iso8601(parse_iso8601_to_ist(end_time))
             response.append(
-                f"Event: {title}\nDescription: {description}\nStart: {start}\nEnd: {end}\nLocation: {location}\nMeeting Link: {hangout_link}\n"
+                f"Event: {title}\nDescription: {description}\nStart: {start}\nEnd: {end}"
             )
         return "\n".join(response)
 
     except HttpError as error:
         return f"An error occurred: {error}"
 
-
 @mcp.tool()
-def get_busy_slots(start_time: str, end_time: str) -> str:
+def get_busy_slots(start: str, end: str) -> str:
     """
-    Get busy slots in the user's Google Calendar between start_time and end_time.
+    Get busy slots in the user's Google Calendar between start and end.
+    Args:
+        start (str): Start time in ISO 8601 (YYYY-MM-DD HH:MM) format
+        end (str): End time in ISO 8601 (YYYY-MM-DD HH:MM) format
+    Returns:
+        All busy slots in ISO 8601 format (IST).
     """
-    creds = None
-    if os.path.exists("token.json"):
-        creds = Credentials.from_authorized_user_file("token.json", SCOPES)
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
-            creds = flow.run_local_server(port=0)
-        with open("token.json", "w") as token:
-            token.write(creds.to_json())
+    creds = get_credentials()
 
     try:
         service = build("calendar", "v3", credentials=creds)
@@ -120,8 +93,8 @@ def get_busy_slots(start_time: str, end_time: str) -> str:
             service.freebusy()
             .query(
                 body={
-                    "timeMin": to_rfc3339(start_time),
-                    "timeMax": to_rfc3339(end_time),
+                    "timeMin": to_ist_iso8601(parse_iso8601_to_ist(start)),
+                    "timeMax": to_ist_iso8601(parse_iso8601_to_ist(end)),
                     "timeZone": "IST",
                     "items": [{"id": "primary"}],
                 }
@@ -132,13 +105,48 @@ def get_busy_slots(start_time: str, end_time: str) -> str:
         if not busy_times:
             return "No busy slots found."
         return "\n".join(
-            f"Busy from {format_dt(slot['start'])} to {format_dt(slot['end'])}"
+            f"Busy from {to_ist_iso8601(parse_iso8601_to_ist(slot['start']))} to {to_ist_iso8601(parse_iso8601_to_ist(slot['end']))}"
             for slot in busy_times
         )
 
     except HttpError as error:
         return f"An error occurred: {error}"
 
+@mcp.tool()
+async def list_events(start: str, end: str) -> str:
+    """
+    List events in the user's Google Calendar between start and end.
+    Args:
+        start (str): Start time in ISO 8601 (YYYY-MM-DD HH:MM) format
+        end (str): End time in ISO 8601 (YYYY-MM-DD HH:MM) format
+    Returns:
+        All events in ISO 8601 format (IST).
+    """
+    creds = get_credentials()
+
+    try:
+        service = build("calendar", "v3", credentials=creds)
+        events_result = (
+            service.events()
+            .list(
+                calendarId="primary",
+                timeMin=to_ist_iso8601(parse_iso8601_to_ist(start)),
+                timeMax=to_ist_iso8601(parse_iso8601_to_ist(end)),
+                singleEvents=True,
+                orderBy="startTime",
+            )
+            .execute()
+        )
+        events = events_result.get("items", [])
+        if not events:
+            return "No upcoming events found."
+        return "\n".join(
+            f"{event['summary']} at {to_ist_iso8601(parse_iso8601_to_ist(event['start'].get('dateTime', event['start'].get('date'))))}"
+            for event in events
+        )
+
+    except HttpError as error:
+        return f"An error occurred: {error}"
 
 @mcp.custom_route("/health", methods=["GET"])
 async def health_check(request):

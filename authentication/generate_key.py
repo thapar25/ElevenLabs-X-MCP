@@ -8,7 +8,7 @@ _ = load_dotenv()
 try:
     # Generate a new key pair
     key_pair = RSAKeyPair.generate()
-    
+
     try:
         with open("authentication/public.pem", "wb") as f:
             f.write(key_pair.public_key.encode("utf-8"))
@@ -30,7 +30,7 @@ try:
             issuer="https://dev.example.com",
             audience="my-dev-server",
             scopes=["read", "write"],
-            expires_in_seconds=60*60*24  # 1 day
+            expires_in_seconds=60 * 60 * 24,  # 1 day
         )
     except Exception as e:
         print(f"Error generating token: {e}")
@@ -39,7 +39,7 @@ try:
     print("--------------------------------------------------")
     print("Token Generation for Development Environment 🔐")
     print("--------------------------------------------------")
-    print(f"⚠️  Keep this token secure and use it in your development environment.")
+    print("⚠️  Keep this token secure and use it in your development environment.")
     print("IMPORTANT : The token will be generated only once and will not be stored.")
     print(f"\n\n✅ Test token for MCP:\n\n{token}")
     print("\n\n✅ RSA public key pair saved to 'authentication/public.pem'")
