@@ -5,21 +5,46 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
 from utils import to_rfc3339, format_dt
+from fastmcp.server.middleware import Middleware, MiddlewareContext
+import os
+from dotenv import load_dotenv
+from starlette.responses import JSONResponse
 
-mcp = FastMCP("Google Calendar")
+_ = load_dotenv()
+
+
+mcp = FastMCP(name="Google Calendar", debug=True)
+
+
+class AuthMiddleware(Middleware):
+    """Middleware that checks for Bearer token authentication."""
+
+    async def on_message(self, context: MiddlewareContext, call_next):
+        auth_header = context.fastmcp_context.get_http_request().headers.get(
+            "Authorization"
+        )
+        secret = os.environ.get("SECRET")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            return {"error": "Missing or invalid Authorization header"}, 401
+        token = auth_header.split("Bearer ")[-1]
+        if token != secret:
+            return {"error": "Invalid token"}, 403
+        return await call_next(context)
+
+
+mcp.add_middleware(AuthMiddleware())
+
 
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
-
-
 
 
 @mcp.tool()
 def get_events_today() -> str:
     """
     Get today's events from the user's Google Calendar.
-    
+
     Returns:
         str: A formatted string of today's events.
     """
@@ -31,20 +56,16 @@ def get_events_today() -> str:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-            "credentials.json", SCOPES
-            )
+            flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
         with open("token.json", "w") as token:
             token.write(creds.to_json())
 
-
-
     try:
         service = build("calendar", "v3", credentials=creds)
 
-         # Call the Calendar API
+        # Call the Calendar API
         now_utc = datetime.datetime.now(tz=datetime.timezone.utc)
         ist_offset = datetime.timedelta(hours=5, minutes=30)
         ist = datetime.timezone(ist_offset)
@@ -52,7 +73,9 @@ def get_events_today() -> str:
         today_ist = now_ist.date()
         end_of_day_ist = datetime.datetime.combine(
             today_ist,
-            datetime.time(hour=23, minute=59, second=59, microsecond=999999, tzinfo=ist)
+            datetime.time(
+                hour=23, minute=59, second=59, microsecond=999999, tzinfo=ist
+            ),
         )
         now_iso = now_ist.isoformat()
         end_of_day_iso = end_of_day_ist.isoformat()
@@ -69,7 +92,6 @@ def get_events_today() -> str:
             .execute()
         )
 
-
         events = events_result.get("items", [])
 
         if not events:
@@ -85,12 +107,14 @@ def get_events_today() -> str:
             hangout_link = event.get("hangoutLink", "No meeting link provided")
             start = format_dt(start_time)
             end = format_dt(end_time)
-            response.append(f"Event: {title}\nDescription: {description}\nStart: {start}\nEnd: {end}\nLocation: {location}\nMeeting Link: {hangout_link}\n")
+            response.append(
+                f"Event: {title}\nDescription: {description}\nStart: {start}\nEnd: {end}\nLocation: {location}\nMeeting Link: {hangout_link}\n"
+            )
         return "\n".join(response)
 
     except HttpError as error:
-        return(f"An error occurred: {error}")    
-    
+        return f"An error occurred: {error}"
+
 
 @mcp.tool()
 def get_busy_slots(start_time: str, end_time: str) -> str:
@@ -104,9 +128,7 @@ def get_busy_slots(start_time: str, end_time: str) -> str:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                "credentials.json", SCOPES
-            )
+            flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
             creds = flow.run_local_server(port=0)
         with open("token.json", "w") as token:
             token.write(creds.to_json())
@@ -129,13 +151,22 @@ def get_busy_slots(start_time: str, end_time: str) -> str:
         if not busy_times:
             return "No busy slots found."
         return "\n".join(
-            f"Busy from {format_dt(slot['start'])} to {format_dt(slot['end'])}" for slot in busy_times
+            f"Busy from {format_dt(slot['start'])} to {format_dt(slot['end'])}"
+            for slot in busy_times
         )
 
     except HttpError as error:
         return f"An error occurred: {error}"
 
 
+@mcp.custom_route("/health", methods=["GET"])
+async def health_check(request: Request):
+    return JSONResponse({"status": "healthy"})
+
+
 if __name__ == "__main__":
     # Initialize and run the server
-    mcp.run(transport='streamable-http')
+    mcp.run(transport="streamable-http")
+else:
+    # Expose ASGI app for uvicorn
+    app = mcp

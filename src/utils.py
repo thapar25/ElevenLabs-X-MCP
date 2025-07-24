@@ -2,7 +2,6 @@ import datetime
 import pytz
 
 
-
 def format_dt(dt_str):
     """Format the datetime string to a more readable format."""
     if "T" in dt_str:
