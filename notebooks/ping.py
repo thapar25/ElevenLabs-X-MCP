@@ -23,10 +23,14 @@ async def interact():
 
             # # Call the greet tool using call_tool method
             # # Pass parameters as a dictionary instead
-            tool_response = await client.call_tool(
-                "list_events", {"start": "2025-07-28", "end": "2025-07-30T23:59:59Z"}
-            )
+            # tool_response = await client.call_tool(
+            #     "list_events", {"start": "2025-07-28", "end": "2025-07-30T23:59:59Z"}
+            # )
             # tool_response = await client.call_tool("get_events_today", {})
+            tool_response = await client.call_tool(
+                "create_event",
+                {"detailed_info": "Meeting with team at 10:00 AM on 2025-07-28"},
+            )
             print("Result:", tool_response)
     except Exception as e:
         print(f"An error occurred: {e}")
