@@ -90,12 +90,12 @@ async def list_events(start: str, end: str) -> str:
 
 
 @mcp.tool()
-async def create_event(event_description:str, duration:str, temporal_information: str) -> str:
+async def create_event(duration:str, temporal_information: str, event_description:str) -> str:
     """
     Create an event in the user's Google Calendar based on information about the event (duration, day of the week, time of the day etc.).
     Eg:
-        create_event("Doctor's appointment", "1 hour", "Monday at 10 AM")
-        create_event("Family dinner in Mumbai", "3 hours", "Last Satturday of the month at 8 PM")
+        create_event("1 hour", "Monday at 10 AM", "Doctor's appointment")
+        create_event("3 hours", "Last Saturday of the month at 8 PM","Family dinner in Mumbai")
     """
     creds = get_credentials()
 
