@@ -19,9 +19,6 @@ _ = load_dotenv()
 mcp = FastMCP(name="Google Calendar", auth=auth_provider ,log_level="DEBUG", debug=True)
 
 
-# mcp.add_middleware(AuthMiddleware())
-
-
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
 
