@@ -1,12 +1,18 @@
 # ElevenLabs-X-MCP
 
+###  Tool Test (Claude Sonnet 4) ✅
+[Conversation Link](https://claude.ai/share/7ee8b2b1-8c8e-404f-a0f3-369317be833d) ⭐⭐⭐⭐
+
+
+
 ### Assumptions
 - Timezone is IST (not handling locale)
 - Spoken language is English
 
 ### Google Calendar API
- - https://developers.google.com/workspace/calendar/api/v3/reference/freebusy
- - https://developers.google.com/workspace/calendar/api/v3/reference/events/quickAdd (uses LLM's maybe, no cost)
+
+- [Get Free/Busy slots](https://developers.google.com/workspace/calendar/api/v3/reference/freebusy)
+- [Quick Add Events](https://developers.google.com/workspace/calendar/api/v3/reference/events/quickAdd) (uses LLM's maybe, no cost)
 
 
 ### Attempted Solutions:
