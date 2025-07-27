@@ -10,7 +10,7 @@ load_dotenv()
 async def interact():
     try:
         transport = StreamableHttpTransport(
-            url="http://127.0.0.1:8000/mcp/", auth=f"{os.getenv('TEST_TOKEN')}"
+            url="http://localhost:10000/mcp/", auth=f"{os.getenv('TEST_TOKEN')}"
         )
         print("Using token:" + "*" * 5 + os.getenv("TEST_TOKEN")[-5:] + "\n")
         async with Client(transport=transport) as client:
@@ -23,14 +23,14 @@ async def interact():
 
             # # Call the greet tool using call_tool method
             # # Pass parameters as a dictionary instead
-            # tool_response = await client.call_tool(
-            #     "list_events", {"start": "2025-07-28", "end": "2025-07-30T23:59:59Z"}
-            # )
-            # tool_response = await client.call_tool("get_events_today", {})
             tool_response = await client.call_tool(
-                "create_event",
-                {"detailed_info": "Meeting with team at 10:00 AM on 2025-07-28"},
+                "list_events", {"start": "2025-07-28", "end": "2025-07-30T23:59:59Z"}
             )
+            # tool_response = await client.call_tool("get_events_today", {})
+            # tool_response = await client.call_tool(
+            #     "create_event",
+            #     {"detailed_info": "Meeting with team at 10:00 AM on 2025-07-28"},
+            # )
             print("Result:", tool_response)
     except Exception as e:
         print(f"An error occurred: {e}")

@@ -13,4 +13,4 @@ ENV GOOGLE_CREDS_BASE64=${GOOGLE_CREDS_BASE64}
 
 EXPOSE 10000
 
-CMD ["sh", "-c", "echo $GOOGLE_CREDS_BASE64 | base64 -d > /mcp/authentication/credentials.json && uv run authentication/generate_key.py && uv run src/server.py --host 0.0.0.0 --port 10000"]
+CMD ["sh", "-c", "echo $GOOGLE_CREDS_BASE64 | base64 -d > /mcp/authentication/service_account.json && uv run authentication/generate_key.py && uv run src/server.py --host 0.0.0.0 --port 10000"]
