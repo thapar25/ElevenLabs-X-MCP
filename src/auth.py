@@ -1,6 +1,6 @@
 from fastmcp.server.auth import BearerAuthProvider
+from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from google.oauth2 import service_account
 import os
 
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
@@ -14,14 +14,13 @@ def get_credentials() -> Credentials:
         Credentials: The valid credentials object.
     """
     creds = None
-    credentials_path = "authentication/service_account.json"
-    if not os.path.exists(credentials_path):
-        raise FileNotFoundError(
-            f"Service account file not found at {credentials_path}. Please ensure it is present."
-        )
-    creds = service_account.Credentials.from_service_account_file(
-        credentials_path, scopes=SCOPES
-    )
+
+    token_path = "authentication/token.json"
+    if os.path.exists(token_path):
+        creds = Credentials.from_authorized_user_file(token_path, SCOPES)
+
+    if creds.expired and creds.refresh_token:
+        creds.refresh(Request())
 
     return creds
 
