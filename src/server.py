@@ -90,7 +90,9 @@ async def list_events(start: str, end: str) -> str:
 
 
 @mcp.tool()
-async def create_event(duration:str, temporal_information: str, event_description:str) -> str:
+async def create_event(
+    duration: str, temporal_information: str, event_description: str
+) -> str:
     """
     Create an event in the user's Google Calendar based on information about the event (duration, day of the week, time of the day etc.).
     Eg:
@@ -105,7 +107,7 @@ async def create_event(duration:str, temporal_information: str, event_descriptio
             service.events()
             .quickAdd(
                 calendarId="primary",
-                text= f"{event_description} for {duration} on {temporal_information}",
+                text=f"{event_description} for {duration} on {temporal_information}",
             )
             .execute()
         )
@@ -127,20 +129,34 @@ async def health_check(request):
 def main():
     """Main function to run the FastMCP server."""
 
-    parser = argparse.ArgumentParser(description="Run the FastMCP server with a specified transport.")
-    parser.add_argument(
-        "--transport", 
-        type=str, 
-        default="streamable-http",
-        help="Specify the transport method (e.g., 'streamable-http', 'stdio', 'sse'). Default is 'streamable-http'."
+    parser = argparse.ArgumentParser(
+        description="Run the FastMCP server with a specified transport."
     )
-    
+    parser.add_argument(
+        "--transport",
+        type=str,
+        default="streamable-http",
+        help="Specify the transport method (e.g., 'streamable-http', 'stdio', 'sse'). Default is 'streamable-http'.",
+    )
+    parser.add_argument(
+        "--host",
+        type=str,
+        default="127.0.0.1",
+        help="Host for streamable-http transport. Default is 127.0.0.1.",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=8000,
+        help="Port for streamable-http transport. Default is 8000.",
+    )
+
     args = parser.parse_args()
 
     if args.transport == "stdio":
         mcp.run(transport=args.transport)
     else:
-        mcp.run(transport=args.transport, host="127.0.0.1", port=8000)
+        mcp.run(transport=args.transport, host=args.host, port=args.port)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,19 @@
+services:
+  init-auth:
+    image: python:3.13-slim
+    environment:
+      - BASE64_CREDENTIALS=${GOOGLE_CREDS_BASE64}
+    entrypoint: >
+      /bin/sh -c "echo $$BASE64_CREDENTIALS | base64 -d > /app/authentication/credentials.json"
+    # This container will exit after creating the file
+
+
+  server:
+    build: .
+    depends_on:
+      - init-auth
+    environment:
+    - AUTH_ISSUER=${AUTH_ISSUER}
+    - AUTH_AUDIENCE=${AUTH_AUDIENCE}
+    ports:
+      - "10000:10000"
