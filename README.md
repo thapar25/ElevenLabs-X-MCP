@@ -2,6 +2,31 @@
 
 A voice-driven calendar management system that integrates ElevenLabs' speech synthesis with Google Calendar via Model Context Protocol (MCP). Schedule, modify, and query your calendar using natural voice commands.
 
+## Demo
+
+## Preparing the demo (using GenAI)
+The MCP server can be run locally on Claude Desktop to generate mock scenarios to test the agent. [Conversation Link](https://claude.ai/share/10cdb489-ec34-4088-a069-f22f1c709ddd)
+
+*Sample claude_desktop_config.json:*
+```
+{
+  "mcpServers": {
+    "calendar": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "C:\\Users\\Thapar\\Documents\\VSCode Files\\ElevenLabs-X-MCP",
+        "C:\\Users\\Thapar\\Documents\\VSCode Files\\ElevenLabs-X-MCP\\.venv\\Scripts\\python.exe",
+        "src/server.py",
+        "--transport",
+        "stdio"
+      ]
+    }
+  }
+}
+```
+
 
 ## 🎯 Features
 
@@ -13,19 +38,18 @@ A voice-driven calendar management system that integrates ElevenLabs' speech syn
 
 ## 🏗️ Architecture
 
-- **Live Server**: Hosted on Render.com for immediate use
-- **Local Development**: Self-hosted option with ngrok tunneling
-- **Authentication**: Bearer token-based security
-- **API Integration**: Google Calendar API v3 with free/busy and quick-add functionality
+- **Remote MCP Server**: Hosted on Render.com for immediate use
+- **ElevenLabs Conversational Agents**: Utilizes GenAI agents with voice capabilities to enhance user interaction
+- **Authentication**: Implements Bearer token-based security for secure access control
+- **API Integration**: Integrates Google Calendar API v3, supporting free/busy checks and quick-add functionality for efficient scheduling
 
 ###  Tool Test (Claude Sonnet 4) ✅
 [Conversation Link](https://claude.ai/share/7ee8b2b1-8c8e-404f-a0f3-369317be833d) ⭐⭐⭐⭐
 
 
-
 ### Assumptions
-- Timezone is IST (not handling locale)
-- Spoken language is English
+- **Timezone**: The application assumes IST (Indian Standard Time) and does not handle other locales.
+- **Language**: English is the spoken language assumed for voice commands.
 
 ### Google Calendar API
 
