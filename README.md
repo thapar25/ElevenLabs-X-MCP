@@ -110,26 +110,41 @@ The MCP server can be run locally on Claude Desktop to generate mock scenarios t
 - Custom MCP (hosted on [Render.com](https://render.com/)) [[Currently Live](https://elevenlabs-x-mcp.onrender.com/health)]
 
 
+### Authentication Flow
+
+1. **Google Calendar Setup**
+   - Navigate to `notebooks/generate_token.ipynb`
+   - Follow the [OAuth2 flow](https://developers.google.com/identity/protocols/oauth2/web-server) to authorize calendar access
+   - Generate and store your credentials securely
+
+[Screenshot placeholder: Google OAuth consent screen]
+
+2. **Bearer Token Generation**
+   - When the MCP server is deployed, a test token is printed in the console.
+   - Copy the token and use it as a secret on ElevenLabs Conversational Platform
+
+[Screenshot placeholder: Jupyter notebook showing successful token generation]
 
 # 🚀 Quick Start
-## Option 1: Use Live Server (Recommended)
+## Option 1: Host MCP Server on Render.com
 
-1. Get Your Bearer Token
+1. Get Your ENV VARS
 
-- Clone this repository
-- Navigate to authentication/ directory
-- Run the token generation notebook (see Token Generation)
+Ensure the following environment variables are configured at the time of deployment to Render:
 
+- `AUTH_ISSUER`: Set this to `"https://dev.example.com"`.
+- `AUTH_AUDIENCE`: Set this to `"my-dev-server"`.
+- `GOOGLE_CREDS_BASE64`: Obtain this string by running the `generate_token.ipynb` Jupyter Notebook.
+
+[Reference](https://render.com/docs/docker#building-from-a-dockerfile)
 
 2. Configure ElevenLabs MCP Integration
 
 - Use the live server endpoint: https://your-render-app.onrender.com/mcp
-- Enter your generated bearer token
+- Enter your generated bearer token as secret
 
 
-
-[Screenshot placeholder: ElevenLabs MCP configuration interface]
-## Option 2: Local Development
+## Option 2: Local Development (and remote access using Ngrok)
 
 1. Clone and Setup
 ```bash
@@ -156,20 +171,6 @@ ngrok http http://127.0.0.1:8000
 
 The project includes Jupyter notebooks for secure token generation and Google Calendar authentication.
 
-### Authentication Flow
-
-1. **Google Calendar Setup**
-   - Navigate to `notebooks/generate_token.ipynb`
-   - Follow the [OAuth2 flow](https://developers.google.com/identity/protocols/oauth2/web-server) to authorize calendar access
-   - Generate and store your credentials securely
-
-[Screenshot placeholder: Google OAuth consent screen]
-
-2. **Bearer Token Generation**
-   - When the MCP server is deployed, a test token is printed in the console.
-   - Copy the token and use it as a secret on ElevenLabs Conversational Platform
-
-[Screenshot placeholder: Jupyter notebook showing successful token generation]
 
 ### Token Security Notes
 
@@ -189,7 +190,6 @@ The live server is deployed on Render.com with:
 - Environment variable management for secrets
 - Built-in SSL and custom domain support
 
-[Reference](https://render.com/docs/docker#building-from-a-dockerfile)
 
 [Screenshot placeholder: Render deployment dashboard]
 
