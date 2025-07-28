@@ -110,20 +110,21 @@ The MCP server can be run locally on Claude Desktop to generate mock scenarios t
 - Custom MCP (hosted on [Render.com](https://render.com/)) [[Currently Live](https://elevenlabs-x-mcp.onrender.com/health)]
 
 
-### Authentication Flow
+## 🔐 Token Generation
+
+The project includes Jupyter notebooks for secure token generation and Google Calendar authentication.
 
 1. **Google Calendar Setup**
    - Navigate to `notebooks/generate_token.ipynb`
    - Follow the [OAuth2 flow](https://developers.google.com/identity/protocols/oauth2/web-server) to authorize calendar access
-   - Generate and store your credentials securely
-
-[Screenshot placeholder: Google OAuth consent screen]
+   - Generate and store your credentials securely (json)
+   <img width="1021" height="97" alt="image" src="https://github.com/user-attachments/assets/19ddeabb-9b4f-4627-ad97-861b04d4d330" />
 
 2. **Bearer Token Generation**
    - When the MCP server is deployed, a test token is printed in the console.
    - Copy the token and use it as a secret on ElevenLabs Conversational Platform
+<img width="1611" height="868" alt="image" src="https://github.com/user-attachments/assets/31668868-cf9d-40e0-8b0d-2071351fcf5a" />
 
-[Screenshot placeholder: Jupyter notebook showing successful token generation]
 
 # 🚀 Quick Start
 ## Option 1: Host MCP Server on Render.com
@@ -140,8 +141,14 @@ Ensure the following environment variables are configured at the time of deploym
 
 2. Configure ElevenLabs MCP Integration
 
-- Use the live server endpoint: https://your-render-app.onrender.com/mcp
 - Enter your generated bearer token as secret
+  
+<img width="510" height="191" alt="image" src="https://github.com/user-attachments/assets/06d21e1b-49e0-48a4-af4e-791108c157e6" />
+
+  
+- Use the live server endpoint: https://your-render-app.onrender.com/mcp
+
+<img width="525" height="287" alt="image" src="https://github.com/user-attachments/assets/b327f0df-98d1-4713-af1a-34d9b82ba512" />
 
 
 ## Option 2: Local Development (and remote access using Ngrok)
@@ -152,24 +159,24 @@ git clone https://github.com/thapar25/ElevenLabs-X-MCP.git
 cd ElevenLabs-X-MCP
 uv sync
 ```
+2. Generate [`credentials.json`](https://developers.google.com/identity/protocols/oauth2/web-server#creatingcred) file from Google Console and place the file in root directory.
 
-2. Generate Authentication Token
+3. Run `notebooks\generate_token.ipynb` to get GOOGLE_CREDS_BASE64. 
+
+4. Generate Authentication Token
 ```bash
 uv run authentication/generate_key.py
 ```
 
-Start Local Server
+4. Start Local Server
 ```bash
 uv run src/server.py
 ```
 
-Expose via ngrok
+5. Expose via ngrok
 ```bash
 ngrok http http://127.0.0.1:8000
 ```
-## 🔐 Token Generation
-
-The project includes Jupyter notebooks for secure token generation and Google Calendar authentication.
 
 
 ### Token Security Notes
@@ -177,8 +184,6 @@ The project includes Jupyter notebooks for secure token generation and Google Ca
 - Tokens are generated locally and never transmitted during creation
 - Store your bearer token securely - it provides full calendar access
 - Regenerate tokens periodically for enhanced security
-
-[Screenshot placeholder: Terminal showing server startup and ngrok URL]
 
 
 ## 🌐 Deployment
