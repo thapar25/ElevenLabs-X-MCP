@@ -3,7 +3,7 @@
 A voice-driven calendar management system that integrates ElevenLabs' speech synthesis with Google Calendar via Model Context Protocol (MCP). Schedule, modify, and query your calendar using natural voice commands.
 
 ## Demo
-<div style="position: relative; padding-bottom: 56.25%; height: 0;"><iframe src="https://www.loom.com/embed/2c68ea3497da4a849a62c76d6dfd3a72?sid=94af1bcc-fea9-4b3e-8b4e-b972b37a1725" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe></div>
+[Demo Video](https://www.loom.com/share/2c68ea3497da4a849a62c76d6dfd3a72?sid=188ddcac-55fe-4a81-9885-4fd5be4f79e7)
 
 ## Evaluation by ChatGPT
 
