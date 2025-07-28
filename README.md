@@ -188,6 +188,8 @@ The live server is deployed on Render.com with:
 - Environment variable management for secrets
 - Built-in SSL and custom domain support
 
+[Reference](https://render.com/docs/docker#building-from-a-dockerfile)
+
 [Screenshot placeholder: Render deployment dashboard]
 
 ### Local Development with ngrok
