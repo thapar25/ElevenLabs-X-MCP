@@ -4,6 +4,51 @@ A voice-driven calendar management system that integrates ElevenLabs' speech syn
 
 ## Demo
 
+## Evaluation by ChatGPT
+
+This evaluation reviews a scheduling chatbot's performance during a multi-turn scheduling conversation. The bot handled everything from simple booking to conflict resolution and last-minute pivots—without access to search functionality (e.g., it could not search for event titles, only list events based on time).
+
+---
+
+### 📊 Final Score: **90 / 100**  
+**Grade:** A−
+
+---
+
+### 🧪 Scoring Breakdown
+
+| **Category**                   | **Max Points** | **Score** | **Notes**                                                                 |
+|-------------------------------|----------------|-----------|---------------------------------------------------------------------------|
+| ✅ Basic Functionality         | 20             | 20        | Seamless handling of standard scheduling flows                           |
+| 🧠 Time Parsing                | 20             | 18        | Understood vague phrases like "late next week" and "before my flight"    |
+| 🔄 Context & Conflict Handling | 20             | 18        | Adapted to mid-convo changes and complex rescheduling                    |
+| ⚠️ Edge Case Detection         | 20             | 17        | Flagged 25-hour session; minor issue with post-Christmas date logic      |
+| 🔍 Proactive Guidance          | 20             | 17        | Could be more assertive suggesting alternate slots when schedules are tight |
+
+---
+
+### ⚠️ Limitations Considered
+
+- **No Search Functionality**: The bot was **not capable of finding events by title**, only by time blocks.  
+  ➤ This explains why it didn’t respond to “after the Project Alpha kickoff” with context—**not a flaw**, just a constraint.
+
+---
+
+### 💡 Opportunities for Improvement
+
+- Improve **calendar awareness** (e.g., business day logic around holidays).
+- Offer **broader time slot suggestions** proactively when conflicts arise.
+- Add **search functionality for event names** in future iterations to enhance context handling.
+
+---
+
+### 🏁 Conclusion
+
+A strong A− performance. This chatbot was resilient, accurate, and maintained flow despite shifting user intent. With minor improvements in calendar logic and proactive assistance, it could easily hit A+ territory.
+
+
+[Evaluation conversation](https://chatgpt.com/share/6887a046-6cf0-8011-81e7-edb21f25b0d1)
+
 ## Preparing the demo (using GenAI)
 The MCP server can be run locally on Claude Desktop to generate mock scenarios to test the agent. [Conversation Link](https://claude.ai/share/10cdb489-ec34-4088-a069-f22f1c709ddd)
 
@@ -113,16 +158,15 @@ The project includes Jupyter notebooks for secure token generation and Google Ca
 ### Authentication Flow
 
 1. **Google Calendar Setup**
-   - Navigate to `authentication/google_calendar_setup.ipynb`
-   - Follow the OAuth2 flow to authorize calendar access
+   - Navigate to `notebooks/generate_token.ipynb`
+   - Follow the [OAuth2 flow](https://developers.google.com/identity/protocols/oauth2/web-server) to authorize calendar access
    - Generate and store your credentials securely
 
 [Screenshot placeholder: Google OAuth consent screen]
 
 2. **Bearer Token Generation**
-   - Open `authentication/token_generator.ipynb`
-   - Run all cells to generate your unique bearer token
-   - This token authenticates your requests to the MCP server
+   - When the MCP server is deployed, a test token is printed in the console.
+   - Copy the token and use it as a secret on ElevenLabs Conversational Platform
 
 [Screenshot placeholder: Jupyter notebook showing successful token generation]
 
