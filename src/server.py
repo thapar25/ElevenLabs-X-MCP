@@ -1,15 +1,17 @@
 import argparse
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
 from fastmcp import FastMCP
-from time_utils import to_ist_iso8601, parse_iso8601_to_ist
-from auth import auth_provider, get_credentials
 from dotenv import load_dotenv
 from starlette.responses import JSONResponse
-
+from auth import auth_provider
+from calendar_services import (
+    fetch_busy_slots,
+    fetch_events,
+    create_calendar_event,
+    update_calendar_event,
+    delete_calendar_event,
+)
 
 _ = load_dotenv()
-
 
 mcp = FastMCP(name="Google Calendar", auth=auth_provider, log_level="DEBUG", debug=True)
 
@@ -24,32 +26,7 @@ async def get_busy_slots(start: str, end: str) -> str:
     Returns:
         All busy slots in ISO 8601 format (IST).
     """
-    creds = get_credentials()
-
-    try:
-        service = build("calendar", "v3", credentials=creds)
-        busy_slots = (
-            service.freebusy()
-            .query(
-                body={
-                    "timeMin": to_ist_iso8601(parse_iso8601_to_ist(start)),
-                    "timeMax": to_ist_iso8601(parse_iso8601_to_ist(end)),
-                    "timeZone": "Asia/Kolkata",
-                    "items": [{"id": "primary"}],
-                }
-            )
-            .execute()
-        )
-        busy_times = busy_slots.get("calendars", {}).get("primary", {}).get("busy", [])
-        if not busy_times:
-            return "No busy slots found."
-        return "\n".join(
-            f"Busy from {to_ist_iso8601(parse_iso8601_to_ist(slot['start']))} to {to_ist_iso8601(parse_iso8601_to_ist(slot['end']))}"
-            for slot in busy_times
-        )
-
-    except HttpError as error:
-        return f"An error occurred: {error}"
+    return await fetch_busy_slots(start, end)
 
 
 @mcp.tool()
@@ -62,31 +39,7 @@ async def list_events(start: str, end: str) -> str:
     Returns:
         All events in ISO 8601 format (IST).
     """
-    creds = get_credentials()
-
-    try:
-        service = build("calendar", "v3", credentials=creds)
-        events_result = (
-            service.events()
-            .list(
-                calendarId="primary",
-                timeMin=to_ist_iso8601(parse_iso8601_to_ist(start)),
-                timeMax=to_ist_iso8601(parse_iso8601_to_ist(end)),
-                singleEvents=True,
-                orderBy="startTime",
-            )
-            .execute()
-        )
-        events = events_result.get("items", [])
-        if not events:
-            return "No upcoming events found."
-        return "\n".join(
-            f"{event['summary']} at {to_ist_iso8601(parse_iso8601_to_ist(event['start'].get('dateTime', event['start'].get('date'))))}"
-            for event in events
-        )
-
-    except HttpError as error:
-        return f"An error occurred: {error}"
+    return await fetch_events(start, end)
 
 
 @mcp.tool()
@@ -99,27 +52,46 @@ async def create_event(
         create_event("1 hour", "Monday at 10 AM", "Doctor's appointment")
         create_event("3 hours", "Last Saturday of the month at 8 PM","Family dinner in Mumbai")
     """
-    creds = get_credentials()
+    return await create_calendar_event(
+        duration, temporal_information, event_description
+    )
 
-    try:
-        service = build("calendar", "v3", credentials=creds)
-        created_event = (
-            service.events()
-            .quickAdd(
-                calendarId="primary",
-                text=f"{event_description} for {duration} on {temporal_information}",
-            )
-            .execute()
-        )
-        return f"Event created: {created_event}"
 
-    except HttpError as error:
-        return f"An error occurred: {error}"
+@mcp.tool()
+async def update_event(
+    event_id: str, duration: str, temporal_information: str, event_description: str
+) -> str:
+    """
+    Update an existing event in the user's Google Calendar.
+    Args:
+        event_id (str): The ID of the event to update.
+        duration (str): New duration for the event.
+        temporal_information (str): New temporal information for the event.
+        event_description (str): New description for the event.
+    Returns:
+        str: Confirmation message or error message.
+    """
+    return await update_calendar_event(
+        event_id, duration, temporal_information, event_description
+    )
+
+
+@mcp.tool()
+async def delete_event(event_id: str) -> str:
+    """
+    Delete an existing event in the user's Google Calendar.
+    Args:
+        event_id (str): The ID of the event to delete.
+    Returns:
+        str: Confirmation message or error message.
+    """
+    return await delete_calendar_event(event_id)
 
 
 @mcp.custom_route("/health", methods=["GET"])
 async def health_check(request):
-    """Health check endpoint to verify server status.
+    """
+    Health check endpoint to verify server status.
     Returns:
         JSONResponse: A JSON response indicating the server status.
     """
@@ -127,8 +99,10 @@ async def health_check(request):
 
 
 def main():
-    """Main function to run the FastMCP server."""
-
+    """
+    Main function to run the FastMCP server.
+    Parses command-line arguments to configure the transport method and server host/port.
+    """
     parser = argparse.ArgumentParser(
         description="Run the FastMCP server with a specified transport."
     )
