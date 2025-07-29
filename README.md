@@ -212,9 +212,6 @@ For development and testing:
 3. Test with both local and live server configurations
 4. Submit a pull request
 
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## ⚠️ Security Considerations
 
