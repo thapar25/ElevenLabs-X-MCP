@@ -159,7 +159,8 @@ The project includes Jupyter notebooks for secure token generation and Google Ca
 -   [uv](https://github.com/astral-sh/uv) (Python package manager)
 -   [Docker](https://www.docker.com/get-started/) and [Docker Compose](https://docs.docker.com/compose/install/)
 -   A Google Cloud Project
--   
+
+  
 ## Option 1: Host MCP Server on Render.com
 
 1. Get Your ENV VARS
