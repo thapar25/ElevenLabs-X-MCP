@@ -5,6 +5,31 @@ A voice-driven calendar management system that integrates ElevenLabs' speech syn
 ## Demo
 [Demo Video](https://www.loom.com/share/2c68ea3497da4a849a62c76d6dfd3a72?sid=188ddcac-55fe-4a81-9885-4fd5be4f79e7)
 
+## 📂 Project Structure
+
+```
+thapar25-elevenlabs-x-mcp/
+├── docker-compose.yml        # Docker Compose configuration for the server
+├── Dockerfile                # Defines the Docker image for the application
+├── LICENCE                   # MIT License file
+├── lint.cmd                  # Linter script for Windows
+├── pyproject.toml            # Project metadata and dependencies
+├── .dockerignore             # Specifies files to ignore in the Docker build context
+├── .python-version           # Specifies the project's Python version (for pyenv)
+├── authentication/
+│   └── generate_key.py       # Generates RSA key pair for MCP server auth
+├── notebooks/
+│   ├── generate_token.ipynb  # Jupyter notebook to generate Google OAuth token
+│   ├── ping.py               # Example client to test the MCP server
+│   └── time_formats.ipynb    # Notebook for exploring time formats
+└── src/
+    ├── __init__.py
+    ├── auth.py               # Handles MCP server and Google API authentication
+    ├── calendar_services.py  # Core logic for Google Calendar API interactions
+    ├── server.py             # FastMCP server definition, tools, and routes
+    └── time_utils.py         # Utility functions for time and timezone conversions
+```
+
 ## Evaluation by ChatGPT
 
 This evaluation reviews a scheduling chatbot's performance during a multi-turn scheduling conversation. The bot handled everything from simple booking to conflict resolution and last-minute pivots—without access to search functionality (e.g., it could not search for event titles, only list events based on time).
@@ -127,6 +152,14 @@ The project includes Jupyter notebooks for secure token generation and Google Ca
 
 
 # 🚀 Quick Start
+
+### Prerequisites
+
+-   [Python 3.13+](https://www.python.org/)
+-   [uv](https://github.com/astral-sh/uv) (Python package manager)
+-   [Docker](https://www.docker.com/get-started/) and [Docker Compose](https://docs.docker.com/compose/install/)
+-   A Google Cloud Project
+-   
 ## Option 1: Host MCP Server on Render.com
 
 1. Get Your ENV VARS
